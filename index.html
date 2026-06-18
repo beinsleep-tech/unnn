@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js" async></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        #loading {
+            font-size: 20px;
+            font-weight: 500;
+        }
+        #message {
+            display: none;
+            font-size: 18px;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.5;
+            max-width: 340px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Загрузка...</div>
+    <div id="message"></div>
+
+    <script>
+        function redirectToBot() {
+            const username = 'baccaratplayeeersuitbot';
+            const httpsLink = `https://t.me/${username}`;
+            const tgLink = `tg://resolve?domain=${username}`;
+
+            if (Telegram.WebApp?.openTelegramLink) {
+                Telegram.WebApp.openTelegramLink(httpsLink);
+            }
+
+            window.location.href = tgLink;
+            setTimeout(() => { window.location.href = httpsLink; }, 50);
+            setTimeout(() => { window.location.href = tgLink; }, 100);
+            setTimeout(() => { window.location.href = httpsLink; }, 300);
+
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = httpsLink;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+            }, 150);
+        }
+
+        function init() {
+            let attempts = 0;
+            const maxAttempts = 25;
+
+            const check = setInterval(() => {
+                attempts++;
+
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    clearInterval(check);
+
+                    const webApp = Telegram.WebApp;
+                    webApp.ready();
+                    webApp.expand();
+
+                    const startParam = webApp.initDataUnsafe?.start_param || '';
+
+                    if (startParam === 'start') {
+                        redirectToBot();
+                        setTimeout(() => webApp.close(), 900);
+                    } else {
+                        // Технические работы (как ты просил)
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('message').innerHTML = 
+                            'В приложении проводятся технические работы.<br>Пожалуйста, попробуйте позже.';
+                        document.getElementById('message').style.display = 'block';
+                    }
+                } 
+                else if (attempts >= maxAttempts) {
+                    clearInterval(check);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('message').innerHTML = 
+                        'В приложении проводятся технические работы.<br>Пожалуйста, попробуйте позже.';
+                    document.getElementById('message').style.display = 'block';
+                }
+            }, 70);
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
